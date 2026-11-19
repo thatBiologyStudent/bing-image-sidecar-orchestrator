@@ -252,17 +252,51 @@
     genBtn.click();
   }
 
+  /** Bing image URL of an <img>, also when it is lazy-loaded (src still a placeholder). */
+  function bingImageSrc(img) {
+    const candidates = [img.currentSrc, img.src, img.getAttribute('data-src'), img.getAttribute('data-original')];
+    return candidates.find((u) => typeof u === 'string' && /(^|\/\/)(th\.bing\.com|[^/]*\.bing\.com\/th\/id\/)/.test(u)) || '';
+  }
+
+  /** Same image at a different size has the same /th/id/... path. */
+  function imageKey(url) {
+    try {
+      const u = new URL(url, location.href);
+      return u.pathname;
+    } catch {
+      return url;
+    }
+  }
+
+  /**
+   * All images of the current batch (normally 4). Reads the batch strip under several selectors, because the
+   * strip may render after the main image or Bing may rename its classes; the large main image is only used
+   * when no strip exists at all.
+   */
   function getCurrentBatchUrls() {
-    const thumbs = Array.from(document.querySelectorAll('.aigc-batch-strip img.aigc-batch__thumb'))
-      .filter((img) => isElementVisible(img) && img.src && img.src.includes('th.bing.com'))
-      .map((img) => img.src);
-    if (thumbs.length > 0) return thumbs;
+    const stripSelectors = [
+      '.aigc-batch-strip img.aigc-batch__thumb',
+      '.aigc-batch-strip img',
+      'button.aigc-batch__item img',
+      '[data-batch-index] img'
+    ];
+    for (const sel of stripSelectors) {
+      const seen = new Set();
+      const urls = [];
+      for (const img of document.querySelectorAll(sel)) {
+        const src = bingImageSrc(img);
+        if (!src) continue;
+        const key = imageKey(src);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        urls.push(src);
+      }
+      if (urls.length > 0) return urls;
+    }
 
     const mainImg = document.querySelector('img.aigc-display__img');
-    if (mainImg && isElementVisible(mainImg) && mainImg.src && mainImg.src.includes('th.bing.com')) {
-      return [mainImg.src];
-    }
-    return [];
+    const mainSrc = mainImg && isElementVisible(mainImg) ? bingImageSrc(mainImg) : '';
+    return mainSrc ? [mainSrc] : [];
   }
 
   async function selectBatchItem(batchIndex) {
@@ -274,7 +308,7 @@
     }
   }
 
-  async function waitForGenerationComplete({ prevUrl, prevImages, autoDismissWatermarkModal, timeout = 120000 }) {
+  async function waitForGenerationComplete({ prevUrl, prevImages, autoDismissWatermarkModal, timeout = 300000 }) {
     const start = Date.now();
     let sawGeneratingState = false;
     let firstReadyAt = 0;
@@ -314,9 +348,9 @@
           if (autoDismissWatermarkModal) dismissWatermarkModal();
           return getCurrentBatchUrls();
         }
-        // If Bing returned fewer than 4 images (e.g. some filtered), wait 2s to make sure remaining ones aren't still loading
+        // Fewer than 4 (some filtered, or the batch strip is still loading): wait up to 15 s for the rest
         if (!firstReadyAt) firstReadyAt = Date.now();
-        if (Date.now() - firstReadyAt >= 2000) {
+        if (Date.now() - firstReadyAt >= 15000) {
           if (autoDismissWatermarkModal) dismissWatermarkModal();
           return getCurrentBatchUrls();
         }

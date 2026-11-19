@@ -1,6 +1,6 @@
 (() => {
   const PROTOCOL = 1;
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
 
   let port = null;
   const pendingIds = new Set();

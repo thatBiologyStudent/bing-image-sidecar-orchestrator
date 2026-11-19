@@ -54,7 +54,7 @@ function isTransientNavError(err) {
   );
 }
 
-async function runBingJobWithPolling(tabId, submitType, payload, { timeout = 120000 } = {}) {
+async function runBingJobWithPolling(tabId, submitType, payload, { timeout = 300000 } = {}) {
   const preSnap = await sendToBingContent(tabId, { type: 'POLL_GENERATION', payload }).catch(() => null);
   let prevUrl = preSnap?.url || '';
   let prevImages = Array.isArray(preSnap?.images) ? preSnap.images : [];
@@ -74,6 +74,7 @@ async function runBingJobWithPolling(tabId, submitType, payload, { timeout = 120
   const start = Date.now();
   let sawGeneratingState = false;
   let firstReadyAt = 0;
+  let lastCount = 0;
 
   while (Date.now() - start < timeout) {
     await sleep(1000);
@@ -122,12 +123,18 @@ async function runBingJobWithPolling(tabId, submitType, payload, { timeout = 120
         }).catch(() => snap);
         return { ok: true, urls: finalSnap?.images?.length ? finalSnap.images : currentImages };
       }
-      if (!firstReadyAt) firstReadyAt = Date.now();
-      if (Date.now() - firstReadyAt >= 2500) {
+      // Bing renders 4 per prompt. With fewer, the batch strip may still be loading (only the main image
+      // visible) or Bing filtered some: wait up to 15 s for more, and restart the wait when another one appears.
+      if (!firstReadyAt || currentImages.length > lastCount) {
+        firstReadyAt = Date.now();
+        lastCount = currentImages.length;
+      }
+      if (Date.now() - firstReadyAt >= 15000) {
         return { ok: true, urls: currentImages };
       }
     } else {
       firstReadyAt = 0;
+      lastCount = 0;
     }
   }
 
@@ -304,7 +311,7 @@ async function generatePromptsWithOpenAI({ baseUrl, apiKey, model, systemPrompt,
 // ==================== Shared Busy Lock & Alembic Bridge ====================
 
 const ALEMBIC_PROTOCOL = 1;
-const ALEMBIC_VERSION = '1.0.0';
+const ALEMBIC_VERSION = '1.0.1';
 const BING_CAPABILITIES = {
   models: ['MAI-Image-2.6-Flash'],
   defaultModel: 'MAI-Image-2.6-Flash',
