@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bing Image Sidecar Orchestrator</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-row">
+      <img src="icons/icon48.png" alt="Bing Image Sidecar Orchestrator" class="brand-logo" />
+      <div>
+        <h1>Bing Image Sidecar</h1>
+        <p id="tabStatus" class="status-pill">Checking Bing tab...</p>
+      </div>
+    </div>
+    <button id="refreshStatusBtn" class="btn btn-ghost btn-sm" title="Refresh tab status">↻</button>
+  </header>
+
+  <section id="openBingCard" class="card hidden">
+    <p class="muted">Open Bing Image Creator in the active tab to start automating.</p>
+    <button id="openBingBtn" class="btn btn-primary btn-full">Open Bing Image Creator</button>
+  </section>
+
+  <!-- Alembic Bridge Control -->
+  <section class="card">
+    <label class="checkbox-row">
+      <input id="allowAlembicCheckbox" type="checkbox" />
+      <span>Allow Alembic to control Bing</span>
+    </label>
+    <p class="muted small mt-xs">
+      When enabled, Alembic Generative Studio (localhost:5178 / thatbio.vercel.app) can generate &amp; edit images through this extension.
+    </p>
+  </section>
+
+  <!-- Watermark / Sign-in Pause Prompt -->
+  <section id="authWarningCard" class="card card-warning hidden">
+    <div class="warning-title">⚠ Not Signed In — Watermark Notice</div>
+    <p class="warning-body">
+      You are not logged in to Bing/Microsoft. Images generated while signed out will include a <strong>watermark</strong>.
+      Would you like to sign in first or continue without logging in?
+    </p>
+    <div class="btn-row">
+      <button id="signInBingBtn" class="btn btn-primary">Sign In on Bing</button>
+      <button id="resumeAfterLoginBtn" class="btn btn-secondary">I'm Signed In — Resume</button>
+    </div>
+    <button id="continueNoLoginBtn" class="btn btn-outline btn-full mt-xs">
+      Continue Without Login (Watermarked)
+    </button>
+  </section>
+
+  <!-- OpenAI-Compatible AI Prompter -->
+  <section class="card">
+    <details id="aiDetails" open>
+      <summary class="section-title">AI Prompter (OpenAI-Compatible)</summary>
+      <div class="form-grid mt-sm">
+        <label>
+          <span>API Base URL</span>
+          <input id="aiBaseUrl" type="text" placeholder="https://api.openai.com/v1" />
+        </label>
+        <label>
+          <span>API Key</span>
+          <input id="aiApiKey" type="password" placeholder="sk-... (optional for local)" />
+        </label>
+        <div class="input-with-btn">
+          <label class="flex-1">
+            <span>Model</span>
+            <input id="aiModel" type="text" placeholder="gpt-4o-mini" />
+          </label>
+          <button id="fetchModelsBtn" class="btn btn-secondary">Fetch Models</button>
+        </div>
+        <select id="aiModelSelect" class="hidden" aria-label="Fetched models"></select>
+        <label>
+          <span>System Prompt (optional)</span>
+          <textarea id="aiSystemPrompt" rows="2" placeholder="Role/style instructions for the AI prompter..."></textarea>
+        </label>
+        <label>
+          <span>Theme / Idea</span>
+          <textarea id="aiTopic" rows="2" placeholder="e.g. Cozy cyberpunk street food stalls in the rain"></textarea>
+        </label>
+        <label class="checkbox-row checkbox-sm">
+          <input id="aiChooseAspectRatio" type="checkbox" />
+          <span>Let AI choose aspect ratio (1:1, 3:2, 2:3)</span>
+        </label>
+        <div class="row-2 align-end">
+          <label>
+            <span>Prompts to Generate (1–8): <strong id="aiCountVal">4</strong></span>
+            <input id="aiCount" type="range" min="1" max="8" value="4" />
+          </label>
+          <button id="generatePromptsBtn" class="btn btn-primary">Generate Prompts</button>
+        </div>
+        <p id="aiStatus" class="muted small hidden"></p>
+      </div>
+    </details>
+  </section>
+
+  <!-- Batch Queue & Generation Settings -->
+  <section class="card">
+    <h2 class="section-title">Batch Queue</h2>
+
+    <div class="form-grid mt-sm">
+      <div class="row-2">
+        <label>
+          <span>Aspect Ratio</span>
+          <select id="aspectRatio">
+            <option value="4" selected>3:2 (Horizontal)</option>
+            <option value="1">1:1 (Square)</option>
+            <option value="5">2:3 (Vertical)</option>
+          </select>
+        </label>
+        <label>
+          <span>Auto-Download</span>
+          <select id="downloadMode">
+            <option value="all" selected>All 4 images</option>
+            <option value="first">First image only</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="folder-box">
+        <div class="input-with-btn">
+          <label class="flex-1">
+            <span>Download Folder</span>
+            <input id="downloadSubfolder" type="text" value="BingImageCreator" placeholder="Subfolder in Downloads" />
+          </label>
+          <button id="chooseFolderBtn" class="btn btn-secondary">Choose Folder</button>
+        </div>
+        <div id="chosenFolderRow" class="row-between hidden">
+          <span id="chosenFolderLabel" class="muted small"></span>
+          <button id="clearFolderBtn" class="btn btn-ghost btn-xs">Use Downloads</button>
+        </div>
+      </div>
+
+      <div class="ref-upload-box">
+        <div class="row-between">
+          <span class="label-text">Reference Image (optional)</span>
+          <button id="clearRefBtn" class="btn btn-ghost btn-xs hidden">Remove</button>
+        </div>
+        <input id="refImageInput" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" />
+        <div id="refPreviewWrap" class="ref-preview hidden">
+          <img id="refPreviewImg" alt="Reference preview" />
+          <span id="refFileName" class="muted small"></span>
+        </div>
+      </div>
+
+      <label>
+        <span>Add Prompt(s) Manually (one per line)</span>
+        <textarea id="manualPromptInput" rows="2" placeholder="Enter one or more prompts..."></textarea>
+      </label>
+      <button id="addManualBtn" class="btn btn-secondary">Add to Queue</button>
+    </div>
+
+    <div class="queue-header mt-md">
+      <span>Queue (<span id="queueCount">0</span>)</span>
+      <button id="clearQueueBtn" class="btn btn-ghost btn-xs">Clear</button>
+    </div>
+    <ul id="queueList" class="queue-list"></ul>
+
+    <div class="btn-row mt-sm">
+      <button id="startBatchBtn" class="btn btn-primary">Start Batch</button>
+      <button id="pauseBatchBtn" class="btn btn-secondary" disabled>Pause</button>
+    </div>
+    <p id="batchStatus" class="muted small mt-xs"></p>
+  </section>
+
+  <!-- Edit Image & Restyle on Current Result -->
+  <section class="card">
+    <details id="editRestyleDetails">
+      <summary class="section-title">Edit Image &amp; Restyle (Current Result)</summary>
+      <div class="form-grid mt-sm">
+        <label>
+          <span>Target Batch Image</span>
+          <select id="targetBatchIndex">
+            <option value="0">Image 1</option>
+            <option value="1">Image 2</option>
+            <option value="2">Image 3</option>
+            <option value="3">Image 4</option>
+          </select>
+        </label>
+
+        <div class="divider"></div>
+        <label>
+          <span>Edit Image Prompt</span>
+          <textarea id="editPromptInput" rows="2" placeholder="Describe what to add, remove, or replace..."></textarea>
+        </label>
+        <button id="runEditBtn" class="btn btn-primary">Run Edit Image &amp; Download</button>
+
+        <div class="divider"></div>
+        <div class="row-2 align-end">
+          <label>
+            <span>Restyle Preset</span>
+            <select id="restyleSelect">
+              <option value="photoreal">Photo</option>
+              <option value="anime">Anime</option>
+              <option value="cartoon3d">3D Cartoon</option>
+              <option value="comic">Cartoon</option>
+              <option value="flatgraphic">Flat graphics</option>
+              <option value="watercolor">Painting</option>
+              <option value="sketch">Sketch</option>
+              <option value="retro">Vintage</option>
+            </select>
+          </label>
+          <button id="runRestyleBtn" class="btn btn-secondary">Restyle &amp; Download</button>
+        </div>
+        <p id="actionStatus" class="muted small hidden"></p>
+      </div>
+    </details>
+  </section>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
