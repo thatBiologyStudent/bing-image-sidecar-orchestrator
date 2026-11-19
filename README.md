@@ -13,7 +13,7 @@ A Chrome Manifest V3 side-panel extension for automating **Bing Image Creator** 
 - **Full-Resolution Auto-Download & Custom Folder Picker:** Automatically downloads generated images at full quality (`?pid=ImgGn`) into either a custom folder chosen via the native folder picker (**Choose Folder**) or a subfolder inside Chrome's Downloads directory.
 - **Reference Images, Edit Image & Restyle:** Attach reference images (`.jpg`, `.png`, `.gif`, `.webp`), run **Edit Image** on any of the 4 generated results, or apply any of Bing's **8 Restyle presets** (`Photo`, `Anime`, `3D Cartoon`, `Cartoon`, `Flat graphics`, `Painting`, `Sketch`, `Vintage`) with automatic download.
 - **Sign-In / Watermark Check:** Detects when Bing is signed out, pauses with a watermark notice, and lets you sign in first or explicitly continue without logging in.
-- **Alembic Generative Studio Integration:** Includes a `window.postMessage` page bridge (`bridge/alembic-bridge.js`) and an **"Allow Alembic to control Bing"** toggle so [Alembic Generative Studio](https://github.com/thatBiologyStudent/alembic-generative-studio) can drive Bing Image Creator directly. See [`ALEMBIC_INTEGRATION.txt`](ALEMBIC_INTEGRATION.txt) for protocol and setup details.
+- **Alembic Generative Studio Integration:** Includes a `window.postMessage` page bridge (`bridge/alembic-bridge.js`) and an **"Allow Alembic to control Bing"** toggle so [Alembic Generative Studio](https://github.com/thatBiologyStudent/alembic-generative-studio) can drive Bing Image Creator directly.
 
 ## Installation (Load Unpacked)
 
@@ -26,4 +26,4 @@ A Chrome Manifest V3 side-panel extension for automating **Bing Image Creator** 
 
 1. Open Bing Image Creator in a Chrome tab (sign in to Microsoft if you want watermark-free images).
 2. Open the **Bing Image Sidecar Orchestrator** side panel and tick **Allow Alembic to control Bing**.
-3. Follow [`ALEMBIC_INTEGRATION.txt`](ALEMBIC_INTEGRATION.txt) to connect the `bing-sidecar` provider in Alembic Generative Studio (`http://localhost:5178`, `http://127.0.0.1:5178`, or `https://thatbio.vercel.app`).
+3. Connect the `bing-sidecar` provider in [Alembic Generative Studio](https://github.com/thatBiologyStudent/alembic-generative-studio) (`http://localhost:5178`, `http://127.0.0.1:5178`, or `https://thatbio.vercel.app`).
