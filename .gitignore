@@ -1,1 +1,5 @@
 ALEMBIC_INTEGRATION.txt
+dist/
+*.pem
+*.crx
+*.zip
