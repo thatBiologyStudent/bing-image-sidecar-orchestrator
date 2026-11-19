@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Bing Image Sidecar Orchestrator",
+  "version": "1.0.0",
+  "description": "Automate Bing Image Creator with batch queues, OpenAI-compatible AI prompting (1-8 prompts), reference images, Edit Image, Restyle, auto-download, and Alembic integration.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "downloads",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.bing.com/*",
+    "https://th.bing.com/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open Bing Image Sidecar Orchestrator",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bing.com/images/create*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:5178/*",
+        "http://127.0.0.1:5178/*",
+        "https://thatbio.vercel.app/*"
+      ],
+      "js": [
+        "bridge/alembic-bridge.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
