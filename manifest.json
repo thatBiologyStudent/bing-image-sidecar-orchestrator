@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bing Image Sidecar Orchestrator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automate Bing Image Creator with batch queues, OpenAI-compatible AI prompting (1-8 prompts), reference images, Edit Image, Restyle, auto-download, and Alembic integration.",
   "permissions": [
     "sidePanel",
