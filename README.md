@@ -31,3 +31,9 @@ The release also has a signed **`.crx`**, but Chrome usually blocks extensions i
 1. Open Bing Image Creator in a Chrome tab (sign in to Microsoft if you want watermark-free images).
 2. Open the **Bing Image Sidecar Orchestrator** side panel and tick **Allow Alembic to control Bing**.
 3. Connect the `bing-sidecar` provider in [Alembic Generative Studio](https://github.com/thatBiologyStudent/alembic-generative-studio) (`http://localhost:5178`, `http://127.0.0.1:5178`, or `https://thatbio.vercel.app`).
+
+## License
+
+Copyright © 2026 thatBiologyStudent. Licensed under [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/).
+
+You may share and adapt this project, also commercially, as long as you give credit (name and a link to this repository), link the license, mark what you changed, and release your changes under the same license. The full text is in [LICENSE](LICENSE).
