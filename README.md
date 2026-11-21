@@ -22,7 +22,7 @@ A Chrome Manifest V3 side-panel extension for automating **Bing Image Creator** 
 3. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`).
 4. Open [Bing Image Creator](https://www.bing.com/images/create/ai-image-generator) and click the **Bing Image Sidecar Orchestrator** toolbar icon to open the side panel.
 
-**Updating:** download the new release zip, replace the files in your extension folder with the new ones, then press **Reload** on the extension's card in `chrome://extensions`. Your settings are kept.
+**Updating:** download the new release zip, replace the files in your extension folder with the new ones, then press **Reload** on the extension's card in `chrome://extensions`. Your settings are kept. From 1.0.2 on, the extension checks GitHub for new releases (at most every 12 hours) and shows a **↑** badge on its icon and a notice in the side panel when one is available.
 
 The release also has a signed **`.crx`**, but Chrome usually blocks extensions installed from a CRX outside the Web Store, so the zip is the recommended way. If you want to work on the code, clone the repository and load the repository folder instead.
 
