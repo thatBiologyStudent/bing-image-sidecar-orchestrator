@@ -1,3 +1,10 @@
+importScripts('update-check.js');
+
+// GitHub update badge: checked on install, on browser start, and (cached for 12 h) whenever the worker wakes up
+chrome.runtime.onInstalled.addListener(() => globalThis.ExtensionUpdate?.updateBadge(true));
+chrome.runtime.onStartup.addListener(() => globalThis.ExtensionUpdate?.updateBadge(true));
+globalThis.ExtensionUpdate?.updateBadge(false);
+
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((err) => console.error('Failed to set sidePanel behavior:', err));
@@ -311,7 +318,7 @@ async function generatePromptsWithOpenAI({ baseUrl, apiKey, model, systemPrompt,
 // ==================== Shared Busy Lock & Alembic Bridge ====================
 
 const ALEMBIC_PROTOCOL = 1;
-const ALEMBIC_VERSION = '1.0.1';
+const ALEMBIC_VERSION = chrome.runtime.getManifest().version;
 const BING_CAPABILITIES = {
   models: ['MAI-Image-2.6-Flash'],
   defaultModel: 'MAI-Image-2.6-Flash',

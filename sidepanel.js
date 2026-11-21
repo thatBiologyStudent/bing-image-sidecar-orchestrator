@@ -898,3 +898,6 @@ chrome.runtime.connect({ name: 'sidepanel' });
 loadSettings();
 renderQueue();
 refreshTabStatus();
+
+// GitHub update notice (update-check.js)
+globalThis.ExtensionUpdate?.showBanner();
